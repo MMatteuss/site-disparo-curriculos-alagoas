@@ -1,102 +1,89 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const logContainer = document.getElementById('log-container');
     const progressBar = document.getElementById('progress-bar');
-    const progressCount = document.getElementById('progress-count');
-    const progressStatus = document.getElementById('progress-status');
-    const completionMessage = document.getElementById('completion-message');
-    const summaryText = document.getElementById('summary-text');
+    const progressText = document.getElementById('progress-text');
+    const logContainer = document.getElementById('log-container');
+    const startButton = document.getElementById('start-button');
     
-    let totalEmails = 0;
-    let emailsEnviados = 0;
-    let emailsComErro = 0;
-    
+    // Função para adicionar log
     function addLog(message, type = 'info') {
         const logEntry = document.createElement('div');
-        logEntry.className = `log-entry log-${type}`;
-        logEntry.textContent = message;
-        logContainer.appendChild(logEntry);
-        logContainer.scrollTop = logContainer.scrollHeight;
+        logEntry.className = `alert alert-${type}`;
+        logEntry.innerHTML = `
+            <span class="badge bg-${type}">${new Date().toLocaleTimeString()}</span>
+            ${message}
+        `;
+        logContainer.prepend(logEntry);
     }
     
+    // Função para atualizar progresso
     function updateProgress(current, total) {
         const percent = Math.round((current / total) * 100);
         progressBar.style.width = `${percent}%`;
-        progressCount.textContent = `${current}/${total}`;
-        progressStatus.textContent = `Enviando (${percent}%)...`;
+        progressBar.setAttribute('aria-valuenow', percent);
+        progressText.textContent = `${current} de ${total} emails enviados (${percent}%)`;
     }
     
-    function showCompletion() {
-        progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
-        progressBar.classList.add('bg-success');
-        progressStatus.textContent = 'Processo concluído!';
+    // Iniciar disparo
+    startButton.addEventListener('click', async function() {
+        startButton.disabled = true;
+        addLog('Iniciando processo de disparo...', 'info');
         
-        summaryText.textContent = 
-            `Total de emails: ${totalEmails} | Enviados com sucesso: ${emailsEnviados} | Com erro: ${emailsComErro}`;
-        
-        completionMessage.classList.remove('d-none');
-    }
-    
-    // Iniciar o processo de disparo
-    fetch('/iniciar_disparo', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            addLog(`Erro: ${data.error}`, 'error');
-            return;
-        }
-        
-        totalEmails = data.total;
-        updateProgress(0, totalEmails);
-        addLog(`Lista de emails carregada. Total: ${totalEmails}`, 'info');
-        
-        // Enviar cada email individualmente
-        data.emails.forEach((email, index) => {
-            setTimeout(() => {
-                fetch('/enviar_email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        index: index + 1,
-                        total: totalEmails
-                    })
-                })
-                .then(response => response.json())
-                .then(result => {
+        try {
+            // Obter lista de emails
+            const response = await fetch('/api/disparar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'error') {
+                throw new Error(data.message);
+            }
+            
+            addLog(`Lista de emails carregada. Total: ${data.total}`, 'success');
+            updateProgress(0, data.total);
+            
+            // Enviar cada email com intervalo
+            for (let i = 0; i < data.emails.length; i++) {
+                try {
+                    const email = data.emails[i];
+                    const emailResponse = await fetch('/api/enviar_email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email: email })
+                    });
+                    
+                    const result = await emailResponse.json();
+                    
                     if (result.status === 'success') {
-                        emailsEnviados++;
-                        addLog(result.message, 'success');
+                        addLog(`Enviado para: ${email}`, 'success');
                     } else {
-                        emailsComErro++;
-                        addLog(result.message, 'error');
+                        addLog(`Falha no envio para ${email}: ${result.message}`, 'danger');
                     }
                     
-                    updateProgress(index + 1, totalEmails);
+                    updateProgress(i + 1, data.total);
                     
-                    // Verificar se é o último email
-                    if (index + 1 === totalEmails) {
-                        addLog('\nPROCESSO CONCLUÍDO', 'info');
-                        addLog(`Total enviados: ${emailsEnviados}/${totalEmails}`, 'info');
-                        showCompletion();
+                    // Intervalo de 15 segundos
+                    if (i < data.emails.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 15000));
                     }
-                })
-                .catch(error => {
-                    emailsComErro++;
-                    addLog(`Erro ao enviar email ${index + 1}: ${error}`, 'error');
-                    updateProgress(index + 1, totalEmails);
-                });
-                
-            }, index * 15000); // Intervalo de 15 segundos entre emails
-        });
-    })
-    .catch(error => {
-        addLog(`Erro ao iniciar disparo: ${error}`, 'error');
+                    
+                } catch (error) {
+                    addLog(`Erro ao enviar email ${i + 1}: ${error.message}`, 'danger');
+                }
+            }
+            
+            addLog('Processo de disparo concluído!', 'success');
+            
+        } catch (error) {
+            addLog(`Erro no processo de disparo: ${error.message}`, 'danger');
+        } finally {
+            startButton.disabled = false;
+        }
     });
 });

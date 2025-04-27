@@ -10,7 +10,7 @@ import os
 from werkzeug.utils import secure_filename
 from pathlib import Path
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.secret_key = 'sua_chave_secreta_aqui'
 
 # Configurações
@@ -19,8 +19,10 @@ DEFAULT_EMAILS_FILE = 'emails.xlsx'
 ALLOWED_EXTENSIONS = {'pdf', 'xlsx'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Criar a pasta de uploads se não existir
+# Garante que as pastas existam
 Path(UPLOAD_FOLDER).mkdir(exist_ok=True)
+Path('static/css').mkdir(parents=True, exist_ok=True)
+Path('static/js').mkdir(parents=True, exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -97,8 +99,91 @@ def index():
 
 @app.route('/disparar_emails')
 def disparar_emails():
-    # Apenas renderiza a página inicial do disparo
+    # Verifica se todos os dados necessários estão na sessão
+    required_keys = ['email_remetente', 'senha_app', 'arquivo_emails', 
+                    'arquivo_curriculo', 'nome_curriculo', 'assunto', 'corpo_email']
+    
+    if not all(key in session for key in required_keys):
+        flash('Dados incompletos. Por favor, preencha o formulário novamente.', 'danger')
+        return redirect(url_for('index'))
+    
     return render_template('disparar_emails.html')
+
+@app.route('/api/disparar', methods=['POST'])
+def api_disparar():
+    try:
+        # Verifica se todos os dados necessários estão na sessão
+        required_keys = ['email_remetente', 'senha_app', 'arquivo_emails', 
+                        'arquivo_curriculo', 'nome_curriculo', 'assunto', 'corpo_email']
+        
+        if not all(key in session for key in required_keys):
+            return jsonify({'status': 'error', 'message': 'Dados da sessão incompletos'}), 400
+        
+        # Carrega a lista de emails
+        df = pd.read_excel(session['arquivo_emails'])
+        email_column = [col for col in df.columns if 'email' in col.lower()][0]
+        emails = df[email_column].dropna().str.strip().tolist()
+        
+        # Limita quantidade se necessário
+        tudo_ou_nada = session.get('tudo_ou_nada', 10)
+        if tudo_ou_nada > 0:
+            emails = emails[:tudo_ou_nada]
+        
+        return jsonify({
+            'status': 'ready',
+            'total': len(emails),
+            'emails': emails
+        })
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/enviar_email', methods=['POST'])
+def api_enviar_email():
+    try:
+        # Verifica dados da sessão primeiro
+        required_keys = ['email_remetente', 'senha_app', 'arquivo_curriculo', 
+                        'nome_curriculo', 'assunto', 'corpo_email']
+        if not all(key in session for key in required_keys):
+            return jsonify({'status': 'error', 'message': 'Dados da sessão incompletos'}), 400
+        
+        data = request.json
+        if not data or 'email' not in data:
+            return jsonify({'status': 'error', 'message': 'Email não especificado'}), 400
+            
+        destinatario = data['email']
+        
+        # Configuração do email
+        msg = MIMEMultipart()
+        msg['From'] = session['email_remetente']
+        msg['To'] = destinatario
+        msg['Subject'] = session['assunto']
+        
+        # Corpo do email
+        msg.attach(MIMEText(session['corpo_email'], 'plain'))
+        
+        # Anexo do currículo
+        with open(session['arquivo_curriculo'], 'rb') as anexo:
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(anexo.read())
+            encoders.encode_base64(part)
+            part.add_header(
+                'Content-Disposition',
+                f'attachment; filename="{session["nome_curriculo"]}.pdf"'
+            )
+            msg.attach(part)
+        
+        # Envio via SMTP com timeout
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=30) as server:
+            server.login(session['email_remetente'], session['senha_app'])
+            server.send_message(msg)
+        
+        return jsonify({'status': 'success'})
+        
+    except smtplib.SMTPException as e:
+        return jsonify({'status': 'error', 'message': f"Erro SMTP: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f"Erro inesperado: {str(e)}"}), 500
 
 @app.route('/iniciar_disparo', methods=['POST'])
 def iniciar_disparo():
