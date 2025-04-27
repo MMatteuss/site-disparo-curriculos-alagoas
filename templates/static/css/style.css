@@ -326,3 +326,14 @@ textarea.form-control:focus {
         transform: rotate(1turn);
     }
 }
+
+.help-icon {
+    color: #0d6efd;
+    cursor: pointer;
+    margin-left: 5px;
+}
+.tooltip-inner {
+    max-width: 350px;
+    text-align: left;
+    padding: 10px;
+}
