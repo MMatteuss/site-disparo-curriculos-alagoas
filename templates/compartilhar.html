@@ -29,19 +29,19 @@
                 </div>
                 
                 <div class="d-flex flex-wrap gap-2">
-                    <button onclick="compartilharWhatsApp()" class="btn btn-success">
+                    <button onclick="shareWhatsApp()" class="btn btn-success">
                         <i class="bi bi-whatsapp"></i> WhatsApp
                     </button>
-                    <button onclick="compartilharFacebook()" class="btn btn-primary">
+                    <button onclick="shareFacebook()" class="btn btn-primary">
                         <i class="bi bi-facebook"></i> Facebook
                     </button>
-                    <button onclick="compartilharTwitter()" class="btn btn-info text-white">
+                    <button onclick="shareTwitter()" class="btn btn-info text-white">
                         <i class="bi bi-twitter"></i> Twitter
                     </button>
-                    <button onclick="compartilharLinkedIn()" class="btn btn-dark">
+                    <button onclick="shareLinkedIn()" class="btn btn-dark">
                         <i class="bi bi-linkedin"></i> LinkedIn
                     </button>
-                    <button onclick="compartilharEmail()" class="btn btn-danger">
+                    <button onclick="shareEmail()" class="btn btn-danger">
                         <i class="bi bi-envelope"></i> Email
                     </button>
                 </div>
@@ -54,6 +54,11 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="static/js/compartilhar.js"></script>
+    <script>
+        // Variável global com a URL do site
+        const SITE_URL = "{{ url_for('index', _external=True) }}";
+        const SHARE_TEXT = "Encontrei esse ótimo serviço para enviar currículos em Alagoas! Confira: ";
+    </script>
+    <script src="{{ url_for('static', filename='js/compartilhar.js') }}"></script>
 </body>
 </html>

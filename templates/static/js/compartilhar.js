@@ -1,69 +1,91 @@
 // Função para copiar link
 function copiarLink() {
-    const link = document.getElementById('link_compartilhamento');
+    const linkInput = document.getElementById('link_compartilhamento');
     const copyButton = document.getElementById('copyButton');
     
-    link.select();
-    link.setSelectionRange(0, 99999);
-    document.execCommand('copy');
+    // Seleciona o texto
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999);
     
+    // Copia para a área de transferência
+    try {
+        navigator.clipboard.writeText(linkInput.value).then(() => {
+            showCopyFeedback(copyButton);
+        }).catch(() => {
+            // Fallback para browsers mais antigos
+            document.execCommand('copy');
+            showCopyFeedback(copyButton);
+        });
+    } catch (e) {
+        // Fallback para browsers muito antigos
+        document.execCommand('copy');
+        showCopyFeedback(copyButton);
+    }
+}
+
+function showCopyFeedback(button) {
     // Feedback visual
-    copyButton.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
-    copyButton.classList.remove('btn-secondary');
-    copyButton.classList.add('btn-success');
+    button.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
+    button.classList.remove('btn-secondary');
+    button.classList.add('btn-success');
     
     // Reset após 3 segundos
     setTimeout(() => {
-        copyButton.innerHTML = '<i class="bi bi-clipboard"></i> Copiar';
-        copyButton.classList.remove('btn-success');
-        copyButton.classList.add('btn-secondary');
+        button.innerHTML = '<i class="bi bi-clipboard"></i> Copiar';
+        button.classList.remove('btn-success');
+        button.classList.add('btn-secondary');
     }, 3000);
 }
 
 // Funções de compartilhamento
-function compartilharWhatsApp() {
-    const link = encodeURIComponent("{{ url_for('index', _external=True) }}");
-    const texto = encodeURIComponent("Encontrei esse ótimo serviço para enviar currículos em Alagoas! Confira: ");
-    window.open(`https://api.whatsapp.com/send?text=${texto}${link}`, '_blank');
+function shareWhatsApp() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const shareUrl = isMobile 
+        ? `whatsapp://send?text=${encodeURIComponent(SHARE_TEXT + SITE_URL)}`
+        : `https://web.whatsapp.com/send?text=${encodeURIComponent(SHARE_TEXT + SITE_URL)}`;
+    
+    openShareWindow(shareUrl);
 }
 
-function compartilharFacebook() {
-    const link = encodeURIComponent("{{ url_for('index', _external=True) }}");
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${link}`, '_blank');
+function shareFacebook() {
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`;
+    openShareWindow(shareUrl);
 }
 
-function compartilharTwitter() {
-    const link = encodeURIComponent("{{ url_for('index', _external=True) }}");
-    const texto = encodeURIComponent("Ótimo serviço para envio de currículos em Alagoas!");
-    window.open(`https://twitter.com/intent/tweet?text=${texto}&url=${link}`, '_blank');
+function shareTwitter() {
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SITE_URL)}`;
+    openShareWindow(shareUrl);
 }
 
-function compartilharLinkedIn() {
-    const link = encodeURIComponent("{{ url_for('index', _external=True) }}");
-    window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${link}`, '_blank');
+function shareLinkedIn() {
+    const shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(SITE_URL)}&title=${encodeURIComponent("Disparador de Currículos")}&summary=${encodeURIComponent(SHARE_TEXT)}`;
+    openShareWindow(shareUrl);
 }
 
-function compartilharEmail() {
-    const link = "{{ url_for('index', _external=True) }}";
-    const assunto = encodeURIComponent("Serviço de envio de currículos em Alagoas");
-    const corpo = encodeURIComponent(`Olá,\n\nEncontrei esse ótimo serviço para enviar currículos em Alagoas:\n${link}\n\nConfira!`);
-    window.location.href = `mailto:?subject=${assunto}&body=${corpo}`;
+function shareEmail() {
+    const subject = "Serviço de envio de currículos em Alagoas";
+    const body = `Olá,\n\nEncontrei esse ótimo serviço para enviar currículos em Alagoas:\n${SITE_URL}\n\nConfira!`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-// Verifica se é dispositivo móvel
-function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+// Função auxiliar para abrir janela de compartilhamento
+function openShareWindow(url) {
+    window.open(
+        url,
+        '_blank',
+        'width=600,height=400,menubar=no,toolbar=no,location=no,status=no'
+    );
 }
 
-// Ajusta links para mobile
+// Inicialização
 document.addEventListener('DOMContentLoaded', function() {
-    if (isMobile()) {
-        // Substitui o link do WhatsApp pelo esquema de URL para abrir no app
-        const whatsappBtn = document.querySelector('[onclick="compartilharWhatsApp()"]');
-        whatsappBtn.onclick = function() {
-            const link = encodeURIComponent("{{ url_for('index', _external=True) }}");
-            const texto = encodeURIComponent("Encontrei esse ótimo serviço para enviar currículos em Alagoas! Confira: ");
-            window.location.href = `whatsapp://send?text=${texto}${link}`;
-        };
-    }
+    // Configura o evento de clique para todos os botões de compartilhamento
+    document.querySelectorAll('[onclick^="share"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.getAttribute('onclick').includes('shareEmail')) return;
+            e.preventDefault();
+            const func = this.getAttribute('onclick').replace('onclick="', '').replace('"', '');
+            window[func]();
+        });
+    });
 });
