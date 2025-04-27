@@ -29,19 +29,19 @@
                 </div>
                 
                 <div class="d-flex flex-wrap gap-2">
-                    <button onclick="shareWhatsApp()" class="btn btn-success">
+                    <button onclick="compartilharWhatsApp()" class="btn btn-success">
                         <i class="bi bi-whatsapp"></i> WhatsApp
                     </button>
-                    <button onclick="shareFacebook()" class="btn btn-primary">
+                    <button onclick="compartilharFacebook()" class="btn btn-primary">
                         <i class="bi bi-facebook"></i> Facebook
                     </button>
-                    <button onclick="shareTwitter()" class="btn btn-info text-white">
+                    <button onclick="compartilharTwitter()" class="btn btn-info text-white">
                         <i class="bi bi-twitter"></i> Twitter
                     </button>
-                    <button onclick="shareLinkedIn()" class="btn btn-dark">
+                    <button onclick="compartilharLinkedIn()" class="btn btn-dark">
                         <i class="bi bi-linkedin"></i> LinkedIn
                     </button>
-                    <button onclick="shareEmail()" class="btn btn-danger">
+                    <button onclick="compartilharEmail()" class="btn btn-danger">
                         <i class="bi bi-envelope"></i> Email
                     </button>
                 </div>
@@ -58,7 +58,48 @@
         // Variável global com a URL do site
         const SITE_URL = "{{ url_for('index', _external=True) }}";
         const SHARE_TEXT = "Encontrei esse ótimo serviço para enviar currículos em Alagoas! Confira: ";
+        
+        function copiarLink() {
+            const input = document.getElementById('link_compartilhamento');
+            input.select();
+            document.execCommand('copy');
+            
+            // Altera o texto do botão temporariamente
+            const button = document.getElementById('copyButton');
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check"></i> Copiado!';
+            
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+            }, 2000);
+        }
+        
+        function compartilharWhatsApp() {
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(SHARE_TEXT + SITE_URL)}`;
+            window.open(url, '_blank');
+        }
+
+        function compartilharFacebook() {
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`;
+            window.open(url, '_blank');
+        }
+
+        function compartilharTwitter() {
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT + SITE_URL)}`;
+            window.open(url, '_blank');
+        }
+
+        function compartilharLinkedIn() {
+            const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`;
+            window.open(url, '_blank');
+        }
+
+        function compartilharEmail() {
+            const assunto = encodeURIComponent("Indicação de serviço para envio de currículos");
+            const corpo = encodeURIComponent(`${SHARE_TEXT}\n\n${SITE_URL}`);
+            const url = `mailto:?subject=${assunto}&body=${corpo}`;
+            window.location.href = url;
+        }
     </script>
-    <script src="{{ url_for('static', filename='js/compartilhar.js') }}"></script>
 </body>
 </html>
