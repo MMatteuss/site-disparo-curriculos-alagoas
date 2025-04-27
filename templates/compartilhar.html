@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Compartilhar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Compartilhe com Amigos de Alagoas <i class="bi bi-share-fill text-primary"></i></h1>
+        
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-megaphone"></i> Indique nosso serviço</h5>
+                <p class="card-text">Ajude seus amigos e familiares a enviarem seus currículos também!</p>
+                
+                <div class="mb-4">
+                    <label for="link_compartilhamento" class="form-label">Link para compartilhar:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="link_compartilhamento" value="{{ url_for('index', _external=True) }}" readonly>
+                        <button onclick="copiarLink()" class="btn btn-secondary" id="copyButton">
+                            <i class="bi bi-clipboard"></i> Copiar
+                        </button>
+                    </div>
+                    <small class="text-muted">Cole este link para compartilhar manualmente</small>
+                </div>
+                
+                <div class="d-flex flex-wrap gap-2">
+                    <button onclick="compartilharWhatsApp()" class="btn btn-success">
+                        <i class="bi bi-whatsapp"></i> WhatsApp
+                    </button>
+                    <button onclick="compartilharFacebook()" class="btn btn-primary">
+                        <i class="bi bi-facebook"></i> Facebook
+                    </button>
+                    <button onclick="compartilharTwitter()" class="btn btn-info text-white">
+                        <i class="bi bi-twitter"></i> Twitter
+                    </button>
+                    <button onclick="compartilharLinkedIn()" class="btn btn-dark">
+                        <i class="bi bi-linkedin"></i> LinkedIn
+                    </button>
+                    <button onclick="compartilharEmail()" class="btn btn-danger">
+                        <i class="bi bi-envelope"></i> Email
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Voltar ao Início
+        </a>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/compartilhar.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados do Disparo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Resultados do Disparo</h1>
+        
+        <div class="mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Resumo</h5>
+                    <p class="card-text">Enviados: {{ enviados }} de {{ total }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h3>Detalhes:</h3>
+            <div class="list-group">
+                {% for category, message in resultados %}
+                    <div class="list-group-item list-group-item-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <a href="{{ url_for('compartilhar') }}" class="btn btn-success">Compartilhar com Amigos</a>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Voltar ao Início</a>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

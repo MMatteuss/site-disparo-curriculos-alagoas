@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disparando Emails</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        #progress-container {
+            margin-top: 2rem;
+        }
+        .progress {
+            height: 30px;
+            margin-bottom: 1rem;
+        }
+        #log-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        .log-success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        .log-error {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        .log-info {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+        .log-warning {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Disparando Emails <i class="bi bi-send-fill text-primary"></i></h1>
+        
+        <div id="progress-container">
+            <div class="d-flex justify-content-between mb-2">
+                <span id="progress-status">Preparando envio...</span>
+                <span id="progress-count">0/0</span>
+            </div>
+            <div class="progress">
+                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <h5 class="mt-4">Registro de Envio:</h5>
+        <div id="log-container">
+            <div class="log-entry log-info">Iniciando processo de disparo de emails...</div>
+        </div>
+        
+        <div id="completion-message" class="mt-4 d-none">
+            <div class="alert alert-success">
+                <h4 class="alert-heading">Processo Concluído!</h4>
+                <p id="summary-text"></p>
+                <hr>
+                <a href="{{ url_for('compartilhar') }}" class="btn btn-success me-2">
+                    <i class="bi bi-share-fill"></i> Compartilhar
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Voltar ao Início
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const logContainer = document.getElementById('log-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressCount = document.getElementById('progress-count');
+            const progressStatus = document.getElementById('progress-status');
+            const completionMessage = document.getElementById('completion-message');
+            const summaryText = document.getElementById('summary-text');
+            
+            let totalEmails = 0;
+            let emailsEnviados = 0;
+            let emailsComErro = 0;
+            
+            function addLog(message, type = 'info') {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                logEntry.textContent = message;
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+            
+            function updateProgress(current, total) {
+                const percent = Math.round((current / total) * 100);
+                progressBar.style.width = `${percent}%`;
+                progressCount.textContent = `${current}/${total}`;
+                progressStatus.textContent = `Enviando (${percent}%)...`;
+            }
+            
+            function showCompletion() {
+                progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+                progressBar.classList.add('bg-success');
+                progressStatus.textContent = 'Processo concluído!';
+                
+                summaryText.textContent = 
+                    `Total de emails: ${totalEmails} | Enviados com sucesso: ${emailsEnviados} | Com erro: ${emailsComErro}`;
+                
+                completionMessage.classList.remove('d-none');
+            }
+            
+            // Iniciar o processo de disparo
+            fetch('/iniciar_disparo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    addLog(`Erro: ${data.error}`, 'error');
+                    return;
+                }
+                
+                totalEmails = data.total;
+                updateProgress(0, totalEmails);
+                addLog(`Lista de emails carregada. Total: ${totalEmails}`, 'info');
+                
+                // Enviar cada email individualmente
+                data.emails.forEach((email, index) => {
+                    setTimeout(() => {
+                        fetch('/enviar_email', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                email: email,
+                                index: index + 1,
+                                total: totalEmails
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.status === 'success') {
+                                emailsEnviados++;
+                                addLog(result.message, 'success');
+                            } else {
+                                emailsComErro++;
+                                addLog(result.message, 'error');
+                            }
+                            
+                            updateProgress(index + 1, totalEmails);
+                            
+                            // Verificar se é o último email
+                            if (index + 1 === totalEmails) {
+                                addLog('\nPROCESSO CONCLUÍDO', 'info');
+                                addLog(`Total enviados: ${emailsEnviados}/${totalEmails}`, 'info');
+                                showCompletion();
+                            }
+                        })
+                        .catch(error => {
+                            emailsComErro++;
+                            addLog(`Erro ao enviar email ${index + 1}: ${error}`, 'error');
+                            updateProgress(index + 1, totalEmails);
+                        });
+                        
+                    }, index * 15000); // Intervalo de 15 segundos entre emails
+                });
+            })
+            .catch(error => {
+                addLog(`Erro ao iniciar disparo: ${error}`, 'error');
+            });
+        });
+    </script>
+</body>
+</html>

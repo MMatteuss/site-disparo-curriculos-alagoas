@@ -1,0 +1,328 @@
+/* Reset e Configurações Base */
+:root {
+    --primary-color: #4361ee;
+    --primary-dark: #3a56d4;
+    --secondary-color: #3f37c9;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --success-color: #4bb543;
+    --danger-color: #ff3333;
+    --warning-color: #ffcc00;
+    --info-color: #17a2b8;
+    --transition-speed: 0.3s;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --box-shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--dark-color);
+    background-color: #f5f7ff;
+    background-image: linear-gradient(135deg, #f5f7ff 0%, #e8ecfe 100%);
+    min-height: 100vh;
+}
+
+/* Container Principal */
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cabeçalho */
+h1 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-color);
+    border-radius: 2px;
+    animation: expandLine 0.8s ease-out forwards;
+}
+
+@keyframes expandLine {
+    from {
+        width: 0;
+    }
+    to {
+        width: 60px;
+    }
+}
+
+/* Formulário */
+form {
+    margin-top: 2rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed) ease;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+.form-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+/* Ícones de Ajuda */
+.help-icon {
+    transition: all 0.2s ease;
+}
+
+.help-icon:hover {
+    transform: scale(1.1);
+    color: var(--secondary-color);
+}
+
+/* Tooltips */
+.tooltip-inner {
+    max-width: 350px;
+    text-align: left;
+    padding: 0.75rem;
+    background-color: var(--dark-color);
+    font-size: 0.9rem;
+    border-radius: var(--border-radius);
+}
+
+/* Botões */
+.btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed) ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-hover);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Alertas */
+.alert {
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Validação */
+.is-invalid {
+    border-color: var(--danger-color) !important;
+}
+
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    20%, 60% {
+        transform: translateX(-5px);
+    }
+    40%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+/* Animações para elementos do formulário */
+.form-group {
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Atrasos para as animações dos grupos de formulário */
+.form-group:nth-child(1) { animation-delay: 0.1s; }
+.form-group:nth-child(2) { animation-delay: 0.2s; }
+.form-group:nth-child(3) { animation-delay: 0.3s; }
+.form-group:nth-child(4) { animation-delay: 0.4s; }
+.form-group:nth-child(5) { animation-delay: 0.5s; }
+.form-group:nth-child(6) { animation-delay: 0.6s; }
+.form-group:nth-child(7) { animation-delay: 0.7s; }
+.form-group:nth-child(8) { animation-delay: 0.8s; }
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    h1 {
+        font-size: 1.75rem;
+    }
+    
+    .form-control {
+        padding: 0.65rem 0.9rem;
+    }
+    
+    .btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        margin: 0.5rem;
+        padding: 1rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .form-label {
+        font-size: 0.95rem;
+    }
+    
+    .form-control {
+        font-size: 0.9rem;
+    }
+}
+
+/* Efeito de hover para inputs de arquivo */
+.form-control[type="file"] {
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+}
+
+.form-control[type="file"]:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(67, 97, 238, 0.05);
+}
+
+/* Textarea com crescimento automático */
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    transition: all var(--transition-speed) ease;
+}
+
+textarea.form-control:focus {
+    min-height: 150px;
+}
+
+/* Efeito de loading no botão de submit */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    border: 4px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s ease infinite;
+}
+
+@keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}
