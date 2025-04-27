@@ -8,6 +8,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="static/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Adicionando SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .help-icon {
+            cursor: pointer;
+            margin-left: 5px;
+            color: #0d6efd;
+        }
+        .help-icon:hover {
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
@@ -26,10 +38,9 @@
             <div class="mb-3">
                 <label for="email_remetente" class="form-label">
                     Seu Email (Gmail)
-                    <i class="bi bi-question-circle help-icon" 
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="right" 
-                       title="Digite seu email do Gmail que será usado para enviar as mensagens. Exemplo: seunome@gmail.com"></i>
+                    <span class="help-icon" data-help="Digite seu email do Gmail que será usado para enviar as mensagens. Exemplo: seunome@gmail.com">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </label>
                 <input type="email" class="form-control" id="email_remetente" name="email_remetente" required>
                 <div class="form-text">Este será o email que aparecerá como remetente</div>
@@ -39,10 +50,9 @@
             <div class="mb-3">
                 <label for="senha_app" class="form-label">
                     Senha de App (Gmail)
-                    <i class="bi bi-question-circle help-icon" 
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="right" 
-                       title="Para gerar a senha de app: 1. Acesse sua conta Google 2. Vá em Segurança 3. Em 'Acesso a apps menos seguros', selecione 'Senha de app' 4. Crie uma senha para o aplicativo"></i>
+                    <span class="help-icon" data-help="Para gerar a senha de app: 1. Acesse sua conta Google 2. Vá em Segurança 3. Em 'Acesso a apps menos seguros', selecione 'Senha de app' 4. Crie uma senha para o aplicativo">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </label>
                 <input type="password" class="form-control" id="senha_app" name="senha_app" required>
                 <div class="form-text">Crie uma senha de app nas configurações de segurança do Google</div>
@@ -52,10 +62,9 @@
             <div class="mb-3">
                 <label for="arquivo_emails" class="form-label">
                     Planilha com Emails (XLSX) - Opcional
-                    <i class="bi bi-question-circle help-icon" 
-                    data-bs-toggle="tooltip" 
-                    data-bs-placement="right" 
-                    title="Envie uma planilha Excel (.xlsx) com os emails ou use nossa lista padrão. A planilha deve ter uma coluna chamada 'Email' ou similar"></i>
+                    <span class="help-icon" data-help="Envie uma planilha Excel (.xlsx) com os emails ou use nossa lista padrão. A planilha deve ter uma coluna chamada 'Email' ou similar">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </label>
                 <input class="form-control" type="file" id="arquivo_emails" name="arquivo_emails" accept=".xlsx">
                 <div class="form-text">Se não enviar, usaremos nossa lista padrão ({{ default_emails_file }})</div>
@@ -65,10 +74,9 @@
             <div class="mb-3">
                 <label for="arquivo_curriculo" class="form-label">
                     Currículo para Anexar (PDF)
-                    <i class="bi bi-question-circle help-icon" 
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="right" 
-                       title="Seu currículo em formato PDF que será anexado a todos os emails. Certifique-se de que o arquivo esteja atualizado e com um tamanho razoável (até 5MB)"></i>
+                    <span class="help-icon" data-help="Seu currículo em formato PDF que será anexado a todos os emails. Certifique-se de que o arquivo esteja atualizado e com um tamanho razoável (até 5MB)">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </label>
                 <input class="form-control" type="file" id="arquivo_curriculo" name="arquivo_curriculo" accept=".pdf" required>
                 <div class="form-text">Apenas arquivos .pdf são aceitos</div>
@@ -78,10 +86,9 @@
             <div class="mb-3">
                 <label for="nome_curriculo" class="form-label">
                     Nome do Currículo (sem extensão)
-                    <i class="bi bi-question-circle help-icon" 
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="right" 
-                       title="O nome que aparecerá no anexo do email. Não inclua a extensão (.pdf). Exemplo: 'Curriculo_Joao_Silva'"></i>
+                    <span class="help-icon" data-help="O nome que aparecerá no anexo do email. Não inclua a extensão (.pdf). Exemplo: 'Curriculo_Joao_Silva'">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </label>
                 <input type="text" class="form-control" id="nome_curriculo" name="nome_curriculo" required>
                 <div class="form-text">Este será o nome do arquivo que o destinatário verá</div>
@@ -91,10 +98,9 @@
             <div class="mb-3">
                 <label for="assunto" class="form-label">
                     Assunto do Email
-                    <i class="bi bi-question-circle help-icon" 
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="right" 
-                       title="O assunto que aparecerá no email enviado. Seja claro e objetivo. Exemplo: 'Currículo para Vaga de Desenvolvedor'"></i>
+                    <span class="help-icon" data-help="O assunto que aparecerá no email enviado. Seja claro e objetivo. Exemplo: 'Currículo para Vaga de Desenvolvedor'">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </label>
                 <input type="text" class="form-control" id="assunto" name="assunto" required>
                 <div class="form-text">Este será o título do email que os destinatários verão</div>
@@ -104,10 +110,9 @@
             <div class="mb-3">
                 <label for="corpo_email" class="form-label">
                     Corpo do Email
-                    <i class="bi bi-question-circle help-icon" 
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="right" 
-                       title="Escreva a mensagem que será enviada junto com seu currículo. Inclua uma saudação, breve apresentação e informações relevantes. Exemplo: 'Prezados, estou enviando meu currículo para concorrer à vaga...'"></i>
+                    <span class="help-icon" data-help="Escreva a mensagem que será enviada junto com seu currículo. Inclua uma saudação, breve apresentação e informações relevantes. Exemplo: 'Prezados, estou enviando meu currículo para concorrer à vaga...'">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </label>
                 <textarea class="form-control" id="corpo_email" name="corpo_email" rows="5" required></textarea>
                 <div class="form-text">Escreva sua mensagem de forma profissional e educada</div>
@@ -117,10 +122,9 @@
             <div class="mb-4">
                 <label for="tudo_ou_nada" class="form-label">
                     Quantidade de Emails
-                    <i class="bi bi-question-circle help-icon" 
-                       data-bs-toggle="tooltip" 
-                       data-bs-placement="right" 
-                       title="Escolha enviar para todos os emails da planilha ou apenas para os 10 primeiros (útil para testes). Recomendamos testar com 10 emails antes de enviar para todos"></i>
+                    <span class="help-icon" data-help="Escolha enviar para todos os emails da planilha ou apenas para os 10 primeiros (útil para testes). Recomendamos testar com 10 emails antes de enviar para todos">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
                 </label>
                 <select class="form-select" id="tudo_ou_nada" name="tudo_ou_nada">
                     <option value="10">Apenas 10 primeiros (recomendado para teste)</option>
@@ -136,6 +140,25 @@
     </div>
     <br>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="static/js/main.js"></script>
+    <script type="text/javascript">
+        // Função para mostrar os alerts de ajuda
+        function showHelp(message) {
+            Swal.fire({
+                title: 'Ajuda',
+                text: message,
+                icon: 'info',
+                confirmButtonText: 'Entendi'
+            });
+        }
+
+        // Adiciona evento de clique para todos os ícones de ajuda
+        document.querySelectorAll('.help-icon').forEach(icon => {
+            icon.addEventListener('click', function(e) {
+                e.preventDefault();
+                const message = this.getAttribute('data-help');
+                showHelp(message);
+            });
+        });
+    </script>
 </body>
 </html>
