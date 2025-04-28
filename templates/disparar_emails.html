@@ -169,6 +169,12 @@
                 }
             });
         });
+        function updateProgress(current, total) {
+            const percent = Math.round((current / total) * 100);
+            progressBar.style.width = `${percent}%`;
+            progressBar.setAttribute('aria-valuenow', percent);
+            progressText.textContent = `${current} de ${total} emails enviados (${percent}%)`;
+        }
     </script>
 </body>
 </html>

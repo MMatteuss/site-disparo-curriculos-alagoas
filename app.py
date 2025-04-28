@@ -28,23 +28,39 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def create_default_emails_file():
-    """Cria um arquivo de emails padrão se não existir"""
+    """Copia a planilha de emails padrão para a pasta de uploads se não existir"""
     default_path = os.path.join(app.config['UPLOAD_FOLDER'], DEFAULT_EMAILS_FILE)
+    source_path = os.path.join('planinha', 'emails.xlsx')
+    
+    # Verifica se o arquivo de destino já existe
     if not os.path.exists(default_path):
-        # Cria um DataFrame de exemplo
-        df = pd.DataFrame({
-            'Email': [
-                'exemplo1@empresa.com',
-                'exemplo2@organizacao.org',
-                'exemplo3@servico.net'
-            ],
-            'Nome': [
-                'Contato Empresa',
-                'Recrutamento Organização',
-                'RH Serviço'
-            ]
-        })
-        df.to_excel(default_path, index=False)
+        try:
+            # Verifica se a planilha fonte existe
+            if not os.path.exists(source_path):
+                raise FileNotFoundError(f"Arquivo fonte não encontrado: {source_path}")
+            
+            # Lê a planilha fonte para verificar a estrutura
+            df = pd.read_excel(source_path)
+            
+            # Verifica se a coluna 'Emails' existe
+            if 'Emails' not in df.columns:
+                raise ValueError("A planilha fonte não contém a coluna 'Emails'")
+            
+            # Copia o arquivo para a pasta de uploads
+            import shutil
+            shutil.copy2(source_path, default_path)
+            
+            print(f"Arquivo padrão copiado de {source_path} para {default_path}")
+            
+        except Exception as e:
+            print(f"Erro ao criar arquivo padrão: {str(e)}")
+            # Cria um arquivo mínimo se houver erro
+            df = pd.DataFrame({
+                'Emails': ['exemplo@provedor.com'],
+                'Nome': ['Contato Exemplo']
+            })
+            df.to_excel(default_path, index=False)
+    
     return default_path
 
 @app.route('/', methods=['GET', 'POST'])
@@ -159,8 +175,8 @@ def api_enviar_email():
         msg['To'] = destinatario
         msg['Subject'] = session['assunto']
         
-        # Corpo do email
-        msg.attach(MIMEText(session['corpo_email'], 'plain'))
+        # Corpo do email - AGORA COM UTF-8
+        msg.attach(MIMEText(session['corpo_email'], 'plain', 'utf-8'))  # Adicionado 'utf-8' aqui
         
         # Anexo do currículo
         with open(session['arquivo_curriculo'], 'rb') as anexo:
@@ -184,6 +200,9 @@ def api_enviar_email():
         return jsonify({'status': 'error', 'message': f"Erro SMTP: {str(e)}"}), 500
     except Exception as e:
         return jsonify({'status': 'error', 'message': f"Erro inesperado: {str(e)}"}), 500
+    
+def sanitize_text(text):
+    return text.encode('utf-8', 'ignore').decode('utf-8')
 
 @app.route('/iniciar_disparo', methods=['POST'])
 def iniciar_disparo():

@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const startButton = document.getElementById('start-button');
     
     // Função para adicionar log
-    function addLog(message, type = 'info') {
+    function addLog(message, type = 'info' ) {
         const logEntry = document.createElement('div');
         logEntry.className = `alert alert-${type}`;
         logEntry.innerHTML = `

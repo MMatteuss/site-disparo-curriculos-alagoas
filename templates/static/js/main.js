@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl, {
             trigger: 'hover focus',
             delay: { show: 300, hide: 100 }
-        });
+        }) ;
     });
 
     // Formatar automaticamente a senha de app
