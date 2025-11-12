@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disparador de Emails</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .help-icon {
+            cursor: pointer;
+            margin-left: 5px;
+            color: #0d6efd;
+        }
+        .help-icon:hover {
+            opacity: 0.8;
+        }
+        .placeholder-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .placeholder-item {
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 2px 0;
+        }
+        .placeholder-item:hover {
+            background-color: #f8f9fa;
+        }
+        .interval-option {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .interval-option:hover {
+            background-color: #f8f9fa;
+        }
+        .interval-option.selected {
+            border-color: #0d6efd;
+            background-color: #e7f1ff;
+        }
+        .interval-time {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Disparador de Emails <i class="bi bi-send-fill text-primary"></i></h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" enctype="multipart/form-data">
+            <!-- Email Remetente -->
+            <div class="mb-3">
+                <label for="email_remetente" class="form-label">
+                    Seu Email (Gmail)
+                    <span class="help-icon" data-help="Digite seu email do Gmail que será usado para enviar as mensagens. Exemplo: seunome@gmail.com">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+                <input type="email" class="form-control" id="email_remetente" name="email_remetente" required>
+                <div class="form-text">Este será o email que aparecerá como remetente</div>
+            </div>
+            
+            <!-- Senha de App -->
+            <div class="mb-3">
+                <label for="senha_app" class="form-label">
+                    Senha de App (Gmail)
+                    <span class="help-icon" data-help="Para gerar a senha de app: 1. Acesse sua conta Google 2. Vá em Segurança 3. Em 'Acesso a apps menos seguros', selecione 'Senha de app' 4. Crie uma senha para o aplicativo">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+                <input type="password" class="form-control" id="senha_app" name="senha_app" required>
+                <div class="form-text">Crie uma senha de app nas configurações de segurança do Google</div>
+            </div>
+            
+            <!-- Currículo -->
+            <div class="mb-3">
+                <label for="arquivo_curriculo" class="form-label">
+                    Currículo para Anexar (PDF)
+                    <span class="help-icon" data-help="Seu currículo em formato PDF que será anexado a todos os emails. Certifique-se de que o arquivo esteja atualizado e com um tamanho razoável (até 5MB)">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+                <input class="form-control" type="file" id="arquivo_curriculo" name="arquivo_curriculo" accept=".pdf" required>
+                <div class="form-text">Apenas arquivos .pdf são aceitos</div>
+            </div>
+            
+            <!-- Nome do Currículo -->
+            <div class="mb-3">
+                <label for="nome_curriculo" class="form-label">
+                    Nome do Currículo (sem extensão)
+                    <span class="help-icon" data-help="O nome que aparecerá no anexo do email. Não inclua a extensão (.pdf). Exemplo: 'Curriculo_Joao_Silva'">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+                <input type="text" class="form-control" id="nome_curriculo" name="nome_curriculo" required>
+                <div class="form-text">Este será o nome do arquivo que o destinatário verá</div>
+            </div>
+            
+            <!-- Assunto do Email -->
+            <div class="mb-3">
+                <label for="assunto" class="form-label">
+                    Assunto do Email
+                    <span class="help-icon" data-help="O assunto que aparecerá no email enviado. Use placeholders como {NomeDaVaga} para personalizar">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+                <input type="text" class="form-control" id="assunto" name="assunto" placeholder="Ex: Candidatura para vaga de {NomeDaVaga}" required>
+                <div class="form-text">Use placeholders para personalizar (veja a lista abaixo)</div>
+            </div>
+            
+            <!-- Corpo do Email -->
+            <div class="mb-3">
+                <label for="corpo_email" class="form-label">
+                    Corpo do Email
+                    <span class="help-icon" data-help="Escreva a mensagem que será enviada. Use placeholders entre chaves {} para incluir dados das vagas automaticamente">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+                <textarea class="form-control" id="corpo_email" name="corpo_email" rows="8" placeholder="Ex: Olá, me candidato à vaga de {NomeDaVaga}. Segue meu currículo em anexo." required></textarea>
+                <div class="form-text">Use placeholders para personalizar cada email</div>
+            </div>
+
+            <!-- Placeholders Disponíveis -->
+            <div class="mb-3">
+                <label class="form-label">Placeholders Disponíveis:</label>
+                <div class="card">
+                    <div class="card-body placeholder-list">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong class="d-block mb-2">Dados da Vaga:</strong>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{NomeDaVaga}')">
+                                    <code>{NomeDaVaga}</code> - Nome da Vaga
+                                </div>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{Email}')">
+                                    <code>{Email}</code> - Email da empresa
+                                </div>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{DataInserida}')">
+                                    <code>{DataInserida}</code> - Data de inserção
+                                </div>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{DataLimite}')">
+                                    <code>{DataLimite}</code> - Data limite
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <strong class="d-block mb-2">Detalhes:</strong>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{Requisitos}')">
+                                    <code>{Requisitos}</code> - Requisitos
+                                </div>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{Atividades}')">
+                                    <code>{Atividades}</code> - Atividades
+                                </div>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{Beneficios}')">
+                                    <code>{Beneficios}</code> - Benefícios
+                                </div>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{Observacoes}')">
+                                    <code>{Observacoes}</code> - Observações
+                                </div>
+                                <div class="placeholder-item" onclick="insertPlaceholder('{DataHoje}')">
+                                    <code>{DataHoje}</code> - Data atual
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-text">Clique em um placeholder para inserir no texto</div>
+            </div>
+
+            <!-- Intervalo entre Emails -->
+            <div class="mb-3">
+                <label class="form-label">
+                    Intervalo entre Emails
+                    <span class="help-icon" data-help="Escolha o intervalo de tempo entre cada email para evitar bloqueios do Gmail. Intervalos maiores são mais seguros">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+                <div id="interval-options">
+                    <div class="interval-option" data-interval="30000">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="intervalo" id="intervalo30" value="30000" checked>
+                            <label class="form-check-label" for="intervalo30">
+                                <span class="interval-time">30 segundos</span> - Mais rápido (arriscado)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="interval-option" data-interval="60000">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="intervalo" id="intervalo60" value="60000">
+                            <label class="form-check-label" for="intervalo60">
+                                <span class="interval-time">1 minuto</span> - Moderado
+                            </label>
+                        </div>
+                    </div>
+                    <div class="interval-option" data-interval="120000">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="intervalo" id="intervalo120" value="120000">
+                            <label class="form-check-label" for="intervalo120">
+                                <span class="interval-time">2 minutos</span> - Seguro (recomendado)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="interval-option" data-interval="300000">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="intervalo" id="intervalo300" value="300000">
+                            <label class="form-check-label" for="intervalo300">
+                                <span class="interval-time">5 minutos</span> - Muito seguro
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-text">
+                    <i class="bi bi-exclamation-triangle"></i> Recomendamos 2 minutos ou mais para evitar bloqueios do Gmail
+                </div>
+            </div>
+            
+            <!-- Quantidade de Emails -->
+            <div class="mb-4">
+                <label for="tudo_ou_nada" class="form-label">
+                    Quantidade de Vagas
+                    <span class="help-icon" data-help="Escolha quantas vagas do banco de dados você quer enviar. Recomendamos testar com poucas vagas primeiro">
+                        <i class="bi bi-question-circle"></i>
+                    </span>
+                </label>
+                <select class="form-select" id="tudo_ou_nada" name="tudo_ou_nada">
+                    <option value="1">Apenas 1 primeira vaga (teste)</option>
+                    <option value="5">Apenas 5 primeiras vagas</option>
+                    <option value="10">Apenas 10 primeiras vagas</option>
+                    <option value="25">Apenas 25 primeiras vagas</option>
+                    <option value="50">Apenas 50 primeiras vagas</option>
+                    <option value="-1">Todas as vagas do banco</option>
+                </select>
+                <div class="form-text">As vagas serão buscadas do banco de dados automaticamente</div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-send-fill"></i> Disparar Emails
+            </button>
+        </form>
+    </div>
+    <br>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Função para mostrar os alerts de ajuda
+        function showHelp(message) {
+            Swal.fire({
+                title: 'Ajuda',
+                text: message,
+                icon: 'info',
+                confirmButtonText: 'Entendi'
+            });
+        }
+
+        // Função para inserir placeholders
+        function insertPlaceholder(placeholder) {
+            const assunto = document.getElementById('assunto');
+            const corpo = document.getElementById('corpo_email');
+            
+            // Se o corpo do email está em foco, insere lá
+            if (corpo === document.activeElement) {
+                const start = corpo.selectionStart;
+                const end = corpo.selectionEnd;
+                corpo.value = corpo.value.substring(0, start) + placeholder + corpo.value.substring(end);
+                corpo.selectionStart = corpo.selectionEnd = start + placeholder.length;
+            } else {
+                // Senão, insere no assunto
+                const start = assunto.selectionStart;
+                const end = assunto.selectionEnd;
+                assunto.value = assunto.value.substring(0, start) + placeholder + assunto.value.substring(end);
+                assunto.selectionStart = assunto.selectionEnd = start + placeholder.length;
+                assunto.focus();
+            }
+        }
+
+        // Adiciona interação aos intervalos
+        document.querySelectorAll('.interval-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+                
+                // Atualiza visual
+                document.querySelectorAll('.interval-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+            
+            // Marca como selecionado se já estiver checked
+            const radio = option.querySelector('input[type="radio"]');
+            if (radio.checked) {
+                option.classList.add('selected');
+            }
+        });
+
+        // Adiciona evento de clique para todos os ícones de ajuda
+        document.querySelectorAll('.help-icon').forEach(icon => {
+            icon.addEventListener('click', function(e) {
+                e.preventDefault();
+                const message = this.getAttribute('data-help');
+                showHelp(message);
+            });
+        });
+
+        // Foca no campo do corpo do email ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('corpo_email').focus();
+        });
+    </script>
+</body>
+</html>
